@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {% if title %}
+      {{ title }}
+    {% else %}
+      Login - EXCOM
+    {% endif %}
+  </title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <style>
+*{
+  color: white;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* filter: blur(5px); */
+}
+    body{
+      background-color: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: row;
+    }
+    canvas{
+    z-index: -2;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background: black;
+}
+
+  </style>
+</head>
+<body>
+  <div class="content-section">
+    <div class="col-md-8">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4 pt-5">Log In, We Miss U</legend>
+            <div class="form-group">
+                {{ form.email.label(class="form-control-label") }}
+                {% if form.email.errors %}
+                    {{ form.email(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.email.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.email(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label(class="form-control-label") }}
+                {% if form.password.errors %}
+                    {{ form.password(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.password(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- <div class="form-check">
+                {{ form.remember(class="form-check-input") }}
+                {{ form.remember.label(class="form-check-label") }}
+            </div> -->
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+        <!-- <small class="text-muted ml-2">
+            <a href="#">Forgot Password?</a>
+        </small> -->
+    </form>
+    <div class="border-top pt-3" id="bottom">
+      <small class="text-muted">
+          Need An Account? <a class="ml-2" href="{{ url_for('register') }}">Sign Up Now</a>
+      </small>
+  </div>
+  <canvas id="canvas1"></canvas>
+</div> 
+
+<script >
+  const canvas = document.getElementById('canvas1');
+const ctx = canvas.getContext('2d');
+let request;
+let angle;
+window.onload = function(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const effect = new FFE(ctx, canvas.width, canvas.height);
+    effect.animate(0);
+
+}
+window.addEventListener('resize',()=>{
+    cancelAnimationFrame(request);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const effect = new FFE(ctx, canvas.width, canvas.height);
+    effect.animate(0);
+})
+mouse = {
+    x:0,
+    y:0,
+}
+window.addEventListener('mousemove',function(e){
+    mouse.x = e.x;
+    mouse.y = e.y;
+    angle += 0.2;
+})
+
+class FFE{
+    #ctx;
+    #width;
+    #height;
+    constructor(context, width, height){
+        this.#ctx = context;
+        this.#width = width;
+        this.#height = height;
+        this.#ctx.lineWidth = 1;
+        this.lasttime = 0;
+        this.interval = 1000;
+        this.counter = 0;
+        this.cell = 15;
+        this.#Grad();
+        this.#ctx.strokeStyle = this.gradient;
+        this.radii = 0;
+        this.vel = 0.03;
+    }
+    #Grad(){
+        this.gradient = this.#ctx.createLinearGradient(0,0,this.#width,this.#height);
+        this.gradient.addColorStop("0.1","#ff5c33");
+        this.gradient.addColorStop("0.2","#ff66b3");
+        this.gradient.addColorStop("0.4","#ccccff");
+        this.gradient.addColorStop("0.6","#b3ffff");
+        this.gradient.addColorStop("0.8","#80ff80");
+        this.gradient.addColorStop("0.9","#ffff33");
+    }
+    // private draw method
+    #draw(angle, x,y){
+        let posx = x;
+        let posy = y;
+        let dx = mouse.x - posx;
+        let dy = mouse.y - posy;
+        let dist = dx*dx + dy*dy;
+        const len = dist*0.0001;
+        this.#ctx.beginPath();
+        this.#ctx.moveTo(x,y);
+        this.#ctx.lineTo(x+Math.cos(angle)*len,y+Math.sin(angle)*len);
+        this.#ctx.stroke();
+    }
+    animate(timestamp){
+        let deltatime = timestamp - this.lasttime;
+        this.lasttime = timestamp;
+        if(this.counter>this.interval){
+            this.#ctx.clearRect(0,0,this.#width,this.#height);
+            for(let y = 0; y<this.#height; y += this.cell){
+                for(let x = 0;x<this.#width;x += this.cell){
+                    const angle = (Math.cos(x*0.01) + Math.sin(y*0.01))*this.radii;
+                    this.#draw(angle, x,y);
+                }
+            }
+            if(this.radii > 5 || this.radii < -5){
+                this.vel *= -1;
+            }
+            this.radii += this.vel;
+
+
+
+
+            this.counter;
+        }
+        else{
+            this.counter += deltatime;
+        }
+        request = requestAnimationFrame(this.animate.bind(this));
+    }
+}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  
+</body>
+</html>

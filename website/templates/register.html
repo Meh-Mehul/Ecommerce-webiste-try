@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {% if title %}
+      {{ title }}
+    {% else %}
+      Login - EXCOM
+    {% endif %}
+  </title>
+  <link rel="stylesheet" href="styele.css" type="text/css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <style>
+*{
+    color: white;
+    margin: 0;
+    box-sizing: border-box;
+    padding:0;
+    
+}
+canvas{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -2;
+    /* filter: blur(50px); */
+}
+body{
+    /* display: flex; */
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    color: aqua;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+}
+body{
+    background: black;
+}
+#hand{
+    backdrop-filter: blur(15px);
+}
+
+  </style>
+</head>
+<body>
+  <div class="content-section pt-5">
+    <div class="col-md-8">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+    <form method="POST" action="" id="hand" class="p-5">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Join Today</legend>
+            <div class="form-group">
+                {{ form.username.label(class="form-control-label") }}
+
+                {% if form.username.errors %}
+                    {{ form.username(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.username.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.username(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.email.label(class="form-control-label") }}
+                {% if form.email.errors %}
+                    {{ form.email(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.email.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.email(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label(class="form-control-label") }}
+                {% if form.password.errors %}
+                    {{ form.password(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.password(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.confirm_password.label(class="form-control-label") }}
+                {% if form.confirm_password.errors %}
+                    {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.confirm_password.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.confirm_password(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+    <div class="border-top pt-3">
+        <small class="text">
+            Already Have An Account? <a class="ml-2" href="{{ url_for('login') }}">Sign In</a>
+        </small>
+    </div>
+</div>
+
+  <canvas id="canvas1"></canvas>
+</div> 
+
+<script >
+    const canvas = document.getElementById('canvas1');
+const ctx = canvas.getContext('2d');
+canvas.height = window.innerWidth;
+canvas.width = window.innerWidth;
+ctx.fillStyle = 'black';
+ctx.lineWidth = 2;
+ctx.strokeStyle = 'black';
+ctx.shadowOffsetX = 10;
+ctx.shadowOffsetY = 10;
+ctx.shadowBlur = 5;
+ctx.shadowColor = 'black';
+hue = 0;
+drawing = true;
+function drawhexagon(radius){
+    ctx.beginPath();//start drawing a path
+    ctx.save();// saving current rotate point so that it doesnt add up
+    ctx.translate(canvas.width/2, canvas.height/2);//shifting the center point of canvas to center so we can rotate around it
+    // ctx.moveTo(0, 0);//intial point
+    ctx.lineTo(0, -radius);//ending point of line
+    ctx.rotate(Math.PI/3);
+    ctx.lineTo(0, -radius);
+    ctx.rotate(Math.PI/3);
+    ctx.lineTo(0, -radius);
+    ctx.rotate(Math.PI/3);
+    ctx.lineTo(0, -radius);
+    ctx.rotate(Math.PI/3);
+    ctx.lineTo(0, -radius);
+    ctx.rotate(Math.PI/3);
+    ctx.lineTo(0, -radius);
+    ctx.rotate(Math.PI/3);
+    ctx.lineTo(0, -radius);
+    ctx.restore();// restoring older canvas setting
+    // ctx.closePath();//closing the drawing
+    ctx.stroke();//filling the drawing
+}
+
+
+function drawstar(lx,ly,x,y,radius, inset,n){
+    ctx.fillStyle = 'hsl('+hue+',70%,30%)';
+    ctx.beginPath();//start drawing a path
+    ctx.save();// saving current rotate point so that it doesnt add up
+    ctx.translate(lx, ly);//shifting the center point of canvas to center so we can rotate around it
+    for(i = 0;i<n;i++){
+        ctx.lineTo(x,y -radius);//ending point of line
+        ctx.rotate(Math.PI/n);
+        ctx.lineTo(x, y-(radius*inset));
+        ctx.rotate(Math.PI/n);
+    }
+    ctx.closePath();
+    ctx.restore();// restoring older canvas setting
+    //ctx.closePath();//closing the drawing
+    ctx.stroke();//filling the drawing
+    ctx.fill();
+}
+let color = false;
+let angle =  0;
+// drawhexagon(200);
+onmousemove = function(e){
+    if(drawing){
+    ctx.save();
+    ctx.translate(e.clientX,e.clientY);
+    ctx.rotate(angle);
+    hue+=1;
+    angle += 1;
+    // drawstar(canvas.height/2,canvas.width/2, 0,0,60,2000,100);
+    drawstar(50,50,0,0,50,1000,100);
+    ctx.restore();}
+}
+
+// drawstar(mouse.x,mouse.y,100,200,200,0.5);
+</script>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  
+</body>
+</html>
