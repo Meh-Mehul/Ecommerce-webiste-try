@@ -167,6 +167,7 @@ def deleteItem(id):
     flash('Item Deleted Successfully', 'Success')
     return redirect(url_for('home'))
 @app.route('/add/cart/<id>')
+@login_required
 def addtocart(id):
     item = Item.query.get_or_404(id)
     rel = ManyMany(items = item.item_id, users = current_user.id)
@@ -194,6 +195,7 @@ def cart():
     print(price)
     return render_template('cart.html', items = items, freq = freq, total = price)
 @app.route('/cart/remove/<id>', methods=['GET', 'POST'])
+@login_required
 def removefromcart(id):
     item = Item.query.get_or_404(id)
     rel = ManyMany.query.filter_by(items = id, users = current_user.id).first_or_404()
